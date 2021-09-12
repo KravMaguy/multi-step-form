@@ -9,7 +9,9 @@ const reverseGeoUrl = "https://us1.locationiq.com/v1/reverse.php";
 
 const App = () => {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state);
+  // const state = useSelector((state) => state);
+  const counterState = useSelector((state) => state.counter);
+  const userState = useSelector((state) => state.user);
 
   const [step, setStep] = useState(1);
   const [inputs, setInputs] = useState({});
@@ -58,7 +60,7 @@ const App = () => {
     const id = Math.floor(Math.random() * 10) + 1;
     dispatch(getUserById(id));
   };
-  if (state.status === "fetching") {
+  if (userState.status === "fetching") {
     return (
       <div className="App">
         <p>Loading........</p>
@@ -67,8 +69,10 @@ const App = () => {
   }
 
   // you will notice that i'm handling the constraints here not on my reducer
-  const handleIncrement = () => state < 10 && dispatch({ type: "INCREMENT" });
-  const handleDecrement = () => state > 0 && dispatch({ type: "DECREMENT" });
+  const handleIncrement = () =>
+    counterState < 10 && dispatch({ type: "INCREMENT" });
+  const handleDecrement = () =>
+    counterState > 0 && dispatch({ type: "DECREMENT" });
 
   const stepDetails = ["Policy Location", "Driver Details", "Vehicle Model"];
 
@@ -106,15 +110,15 @@ const App = () => {
     <div className="App">
       <button onClick={handleClick}>Get random user</button>
       <div>
-        {state.status !== "error" ? (
-          <pre>{JSON.stringify(state.user, null, 2)}</pre>
+        {userState.status !== "error" ? (
+          <pre>{JSON.stringify(userState.user, null, 2)}</pre>
         ) : (
-          <pre>{JSON.stringify(state.error, null, 2)}</pre>
+          <pre>{JSON.stringify(userState.error, null, 2)}</pre>
         )}
       </div>
       <hr />
       <h1>state = greater than 0 and less than 10</h1>
-      <p>state: {state}</p>
+      <p>state: {counterState}</p>
       <button onClick={handleIncrement}>Increment</button>{" "}
       <button onClick={handleDecrement}>Decrement</button>
       <hr />
