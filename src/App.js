@@ -32,9 +32,36 @@ const App = () => {
     setStep((prevStep) => prevStep + 1);
   };
 
+  const prevStep = (e, step) => {
+    e.preventDefault();
+    setStep((prevStep) => prevStep - 1);
+  };
+
   const advance = (e) => {
     e.preventDefault();
-    setliscenseReady(true);
+    setliscenseReady(!liscenseReady);
+  };
+
+  const getLocationDetails = async (url) => {
+    try {
+      const res = await axios.get(url);
+      const { data } = res;
+      const { county } = data.address;
+      setInputs({ county });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getCarModels = async (url) => {
+    console.log("fetching models");
+    try {
+      const res = await axios.get(url);
+      const { Results } = res.data;
+      console.log("cars: ", Results);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -44,12 +71,10 @@ const App = () => {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude } = position.coords;
         const { longitude } = position.coords;
-        const url = `${reverseGeoUrl}?key=${key}&lat=${latitude}&lon=${longitude}&format=json`;
-        axios.get(url).then((res) => {
-          const { data } = res;
-          const { county } = data.address;
-          setInputs({ county });
-        });
+        const geoUrl = `${reverseGeoUrl}?key=${key}&lat=${latitude}&lon=${longitude}&format=json`;
+        const carDataUrl = `https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json`;
+        getLocationDetails(geoUrl);
+        getCarModels(carDataUrl);
       });
     }
   }, []);
@@ -66,11 +91,12 @@ const App = () => {
               value={inputs.county || ""}
               onChange={handleChange}
             />
-            <button onClick={(e) => advanceStep(e, step)}>Driver ›</button>
+            <button onClick={(e) => advanceStep(e, step)}>Driver Name›</button>
           </div>
         )}
         {step === 2 && !liscenseReady ? (
           <div>
+            <button onClick={(e) => prevStep(e, step)}>‹Policy Location</button>
             <div>
               <label>
                 First Name{" "}
@@ -93,10 +119,11 @@ const App = () => {
                 />
               </label>
             </div>
-            <button onClick={(e) => advance(e)}>Liscense Details ›</button>
+            <button onClick={(e) => advance(e)}>Liscense Details›</button>
           </div>
         ) : step === 2 && liscenseReady ? (
           <div>
+            <button onClick={(e) => advance(e, step)}>‹Driver Name</button>
             <div>
               <label>
                 liscense Number{" "}
@@ -119,11 +146,12 @@ const App = () => {
                 />
               </label>
             </div>
-            <button onClick={(e) => advanceStep(e, step)}>Vehicle ›</button>
+            <button onClick={(e) => advanceStep(e, step)}>Vehicle Make›</button>
           </div>
         ) : null}
         {step === 3 && (
           <div>
+            <button onClick={(e) => prevStep(e, step)}>‹Driver Details</button>
             <input
               type="text"
               name="vehicle"
