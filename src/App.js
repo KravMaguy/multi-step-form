@@ -1,32 +1,33 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserById } from "./redux/actionsCreator";
+import { getUserById, getPolicyLocation } from "./redux/actionsCreator";
 import axios from "axios";
 
-const key = process.env.REACT_APP_GEO_KEY;
+// const key = process.env.REACT_APP_GEO_KEY;
 
-const reverseGeoUrl = "https://us1.locationiq.com/v1/reverse.php";
+// const reverseGeoUrl = "https://us1.locationiq.com/v1/reverse.php";
 
 const App = () => {
   const dispatch = useDispatch();
   // const state = useSelector((state) => state);
   const counterState = useSelector((state) => state.counter);
   const userState = useSelector((state) => state.user);
+  const policyLocation = useSelector((state) => state.policy);
 
   const [step, setStep] = useState(1);
   const [inputs, setInputs] = useState({});
   const [liscenseReady, setliscenseReady] = useState(false);
 
-  const getLocationDetails = async (url) => {
-    try {
-      const res = await axios.get(url);
-      const { data } = res;
-      const { county } = data.address;
-      setInputs({ county });
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // const getLocationDetails = async (url) => {
+  //   try {
+  //     const res = await axios.get(url);
+  //     const { data } = res;
+  //     const { county } = data.address;
+  //     setInputs({ county });
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
   const getCarModels = async (url) => {
     console.log("fetching models");
@@ -46,9 +47,10 @@ const App = () => {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude } = position.coords;
         const { longitude } = position.coords;
-        const geoUrl = `${reverseGeoUrl}?key=${key}&lat=${latitude}&lon=${longitude}&format=json`;
+        dispatch(getPolicyLocation(latitude, longitude));
+        // const geoUrl = `${reverseGeoUrl}?key=${key}&lat=${latitude}&lon=${longitude}&format=json`;
         const carDataUrl = `https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json`;
-        getLocationDetails(geoUrl);
+        // getLocationDetails(geoUrl);
         getCarModels(carDataUrl);
       });
     }
@@ -108,6 +110,14 @@ const App = () => {
 
   return (
     <div className="App">
+      <div>
+        {policyLocation.status !== "error" ? (
+          <pre>{JSON.stringify(policyLocation.county, null, 2)}</pre>
+        ) : (
+          <pre>{JSON.stringify(policyLocation.county, null, 2)}</pre>
+        )}
+      </div>
+      <hr />
       <button onClick={handleClick}>Get random user</button>
       <div>
         {userState.status !== "error" ? (
